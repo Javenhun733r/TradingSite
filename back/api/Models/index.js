@@ -1,6 +1,6 @@
 const { Sequelize, DataTypes } = require('sequelize');
 
-const sequelize = new Sequelize('tradingsite', 'root', '1234', {
+const sequelize = new Sequelize('tradingsite', 'root', 'qqwwee112233', {
     host: 'localhost',
     dialect: 'mysql',
 });
@@ -18,13 +18,13 @@ db.Sequelize = Sequelize;
 db.sequelize = sequelize;
 
 db.users = require('./userModel')(sequelize, DataTypes);
-
-// db.sequelize.sync({ force: false })
-//     .then(() => {
-//         console.log('Database synchronized');
-//     })
-//     .catch((err) => {
-//         console.error('Error synchronizing database:', err);
-//     });
+db.items = require('./itemModel')(sequelize, DataTypes);
+ // db.sequelize.sync({ force: false })
+ //     .then(() => {
+ //         console.log('Database synchronized');
+ //     })
+ //    .catch((err) => {
+ //        console.error('Error synchronizing database:', err);
+ //     });
 
 module.exports = db;

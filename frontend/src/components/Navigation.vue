@@ -4,9 +4,9 @@
       <router-link to="/" class="text-logo">TradingSite</router-link>
     </div>
     <ul class="nav-links">
-      <li><router-link to="/">Home</router-link></li>
-
-      <li><router-link to="/signup"><font-awesome-icon icon="fa-solid fa-user" /></router-link></li>
+      <li><router-link to="/items">Home</router-link></li>
+      <li><router-link to="/login">Login</router-link></li>
+      <li><router-link to="/signup">Register</router-link></li>
     </ul>
   </nav>
 </template>
