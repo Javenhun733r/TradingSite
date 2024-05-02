@@ -1,17 +1,17 @@
+// models/item.js
+
 module.exports = (sequelize, DataTypes) => {
-    const Item = sequelize.define("item", {
+    const Item = sequelize.define("Item", {
         name: {
             type: DataTypes.STRING,
             allowNull: false
         },
         description: {
             type: DataTypes.STRING,
-            unique: true,
-            isEmail: true,
             allowNull: false
         },
         photos: {
-            type: DataTypes.STRING,
+            type: DataTypes.JSON, // Use JSON datatype to store an array of photo paths
             allowNull: true
         },
         userId: {
@@ -21,6 +21,7 @@ module.exports = (sequelize, DataTypes) => {
     }, {
         timestamps: false
     });
+
     Item.associate = (models) => {
         Item.belongsTo(models.User, { foreignKey: 'userId' });
     };

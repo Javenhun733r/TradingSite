@@ -29,7 +29,27 @@ const signup = async (req, res) => {
 };
 
 
+const getUserName = async (req,res) =>{
+    try {
+        const token = req.headers.authorization;
+        if (!token) {
+            return res.status(401).send("Token not provided");
+        }
+        const decoded = jwt.verify(token, process.env.secretKey);
 
+        const userId = decoded.id;
+        const user = await User.findByPk(userId);
+
+        if (!user) {
+            return res.status(404).send("User not found");
+        }
+
+
+        return res.status(200).send(user.username);
+    } catch (error) {
+        console.log(error);
+    }
+}
 
 const login = async (req, res) => {
     try {
@@ -65,4 +85,5 @@ const login = async (req, res) => {
 module.exports = {
     signup,
     login,
+    getUserName
 };

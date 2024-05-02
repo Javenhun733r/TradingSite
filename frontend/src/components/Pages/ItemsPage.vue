@@ -15,7 +15,6 @@
           <input type="file" id="photos" ref="photosInput" multiple @change="handleFileUpload">
         </div>
         <button @click="submitNewItem">Submit</button>
-
       </div>
     </div>
   </ModalWindow>
@@ -28,9 +27,7 @@
       </template>
     </div>
     <div v-if="products.length === 0">Немає товарів доступних зараз.</div>
-
     <button @click="isAddingItem = true">Add your own item</button>
-
   </div>
 </template>
 
@@ -49,24 +46,28 @@ export default {
       try {
         const response = await axios.get('http://localhost:8081/items');
         this.products = response.data;
+        console.log(this.products)
       } catch (error) {
         console.error('Помилка при отриманні товарів', error);
       }
     },
     async submitNewItem() {
       try {
-        const formData = {
-          name: this.name,
-          description: this.description,
-          photos: this.uploadedPhotos, // Передайте список фотографій
-          userId: 1 // Встановіть userId відповідно до вашого поточного користувача
-        };
-        await axios.post('http://localhost:8081/items', formData);
-        // Чітко повідомте про успішне додавання елементу
-        console.log('Елемент успішно додано');
-        // Закрийте модальне вікно після успішного додавання
+        const formData = new FormData();
+        formData.append('name', this.name);
+        formData.append('description', this.description);
+        formData.append('jwt', localStorage.getItem('jwt'));
+
+        // Додайте кожен файл до FormData
+        this.uploadedPhotos.forEach(photo => {
+          formData.append('photos', photo.file); // Додаємо файл
+        });
+
+        // Відправка запиту на сервер
+        const response = await axios.post('http://localhost:8081/create_item', formData);
+        console.log('Елемент успішно додано', response.data);
+
         this.isAddingItem = false;
-        // Оновіть список елементів після додавання нового елементу
         this.fetchItems();
       } catch (error) {
         console.error('Помилка при додаванні елементу', error);
@@ -75,20 +76,15 @@ export default {
     handleFileUpload(event) {
       const files = event.target.files;
       for (let i = 0; i < files.length; i++) {
-        const reader = new FileReader();
-        reader.onload = () => {
-          this.uploadedPhotos.push({url: reader.result});
-        };
-        reader.readAsDataURL(files[i]);
+        const file = files[i];
+        this.uploadedPhotos.push({ file: file, name: file.name }); // Додаємо кожен файл до масиву
       }
     }
   },
   mounted() {
     this.fetchItems();
   },
-
   data() {
-
     return {
       name: '',
       description: '',
@@ -107,13 +103,11 @@ export default {
 }
 
 .product-row {
-
   flex-wrap: wrap;
   display: inline-block;
 }
 
 Product {
-
   width: 20%; /* Кожен товар по 20% ширини для відображення 5 товарів у рядок */
   padding: 10px;
   box-sizing: border-box;

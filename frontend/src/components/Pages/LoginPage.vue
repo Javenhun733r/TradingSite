@@ -43,7 +43,7 @@ export default {
         await new Promise(resolve => setTimeout(resolve, 0));
 
 
-        window.location.href = '/';
+        window.location.href = '/items';
       } catch (error) {
         console.error("Login failed: " + error);
       }

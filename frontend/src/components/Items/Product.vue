@@ -1,7 +1,7 @@
 <!-- Product.vue -->
 <template>
   <div class="product">
-    <img :src="product.imageUrl" alt="Product Image" />
+    <img :src="getImageUrl(product.photos[0])" alt="Product Image">
     <h3>{{ product.name }}</h3>
     <p>{{ product.description }}</p>
     <button @click="contactSeller">Зв'язатися</button>
@@ -19,7 +19,10 @@ export default {
   methods: {
     contactSeller() {
       // Ваша логіка для зв'язку з продавцем
-      console.log('Зв\'язатися з продавцем:', this.product.name);
+      console.log('Зв\'язатися з продавцем:', this.product.photos);
+    },
+    getImageUrl(filename) {
+      return `http://localhost:8081/image/${filename}`;
     }
   }
 };

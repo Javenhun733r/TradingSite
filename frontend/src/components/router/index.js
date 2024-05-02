@@ -3,6 +3,7 @@ import MainPage from "@/components/Pages/MainPage.vue";
 import SignUpPage from "@/components/Pages/SignUpPage.vue";
 import LoginPage from "@/components/Pages/LoginPage.vue";
 import ItemsPage from "@/components/Pages/ItemsPage.vue";
+import ProfilePage from "@/components/Pages/ProfilePage.vue";
 const router = createRouter({
     history: createWebHistory(),
     routes: [
@@ -25,7 +26,12 @@ const router = createRouter({
             path: "/items",
             name: "Items page",
             component: ItemsPage,
-        }
+        },
+        {
+            path: '/profile',
+            name: 'Profile',
+            component: ProfilePage,
+        },
     ],
 });
 

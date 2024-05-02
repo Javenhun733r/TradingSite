@@ -5,11 +5,11 @@ const cookieParser = require('cookie-parser')
 const db = require('./api/Models')
 const userRoutes = require ('./api/Routes/userRoutes')
 const cors = require("cors");
-
+const bodyParser = require('body-parser');
 
 
 const app = express()
-
+app.use(bodyParser.json({ limit: '10mb' }));
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
 app.use(cookieParser())

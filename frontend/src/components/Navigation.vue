@@ -3,16 +3,38 @@
     <div class="logo">
       <router-link to="/" class="text-logo">TradingSite</router-link>
     </div>
-    <ul class="nav-links">
+    <ul class="nav-links" >
       <li><router-link to="/items">Home</router-link></li>
-      <li><router-link to="/login">Login</router-link></li>
-      <li><router-link to="/signup">Register</router-link></li>
+      <li v-if="isAuth"><router-link to="/profile"> <font-awesome-icon icon="fa-solid fa-user"></font-awesome-icon></router-link></li>
+      <li v-if="isAuth"><font-awesome-icon @click="logout()" icon="fa-solid fa-xmark" /></li>
+      <li v-if="!isAuth"><router-link to="/login">Login</router-link></li>
+      <li v-if="!isAuth"><router-link to="/signup">Register</router-link></li>
     </ul>
   </nav>
 </template>
 
-<script setup>
+<script>
+export default {
+  name: "Nav-bar",
+  data() {
+    return {
+      isAuth: false,
+      jwt: ""
+    };
+  },
+  mounted(){
+    const jwt = localStorage.getItem("jwt")
+    this.isAuth = jwt!==null;
+    this.jwt = jwt;
 
+  },
+  methods:{
+    logout(){
+      this.isAuth = false;
+      localStorage.removeItem("jwt")
+    }
+  }
+};
 </script>
 
 <style scoped>
