@@ -1,9 +1,16 @@
 const db = require("../Models");
 const Item = db.items;
-const multer = require('multer');
+
 const jwt = require("jsonwebtoken");
 const path = require("path");
-
+const { BlobServiceClient } = require("@azure/storage-blob");
+const accountName = process.env.ACCOUNT_NAME;
+const sasToken = process.env.SAS_TOKEN;
+const containerName = process.env.CONTAINER_NAME;
+const blobServiceClient = new BlobServiceClient(`https://${accountName}.blob.core.windows.net/?${sasToken}`);
+const containerClient = blobServiceClient.getContainerClient(containerName);
+const multer = require('multer');
+const upload = multer();
 const getPhoto = async (req, res) =>{
     const filename = req.params.filename;
     const imagePath = path.join(__dirname, 'public/uploads', filename);
@@ -54,25 +61,29 @@ const deleteItem = async (req,res)=>
 const createItem = async (req, res) => {
     try {
         const { name, description } = req.body;
-        const token = req.body.jwt;
-        const decoded = jwt.verify(token, process.env.secretKey);
+        console.log(req.body);
+        if (!name || !description) {
+            return res.status(400).json({ error: description });
+        }
 
+        const token = req.headers.authorization;
+        const decoded = jwt.verify(token, process.env.secretKey);
         const userId = decoded.id;
         const photos = [];
 
-        // Перевірка наявності файлів у запиті
-        if (req.files && req.files.length > 0) {
-            req.files.forEach(file => {
-                const filePath = path.join(__dirname, '../uploads/' + file.filename);
-                photos.push(filePath); // Додавання шляху до файлу у масив
-            });
-        } else if (req.files) {
-            // Якщо переданий лише один файл, обробити його як масив з одним елементом
-            const filePath = '/uploads/' + req.files.filename;
-            photos.push(filePath); // Додавання шляху до файлу у масив
+        const files = req.files;
+
+        for (const key in files) {
+            const file = files[key];
+            const blobName = `${userId}_${file.originalname}`;
+            const blobClient = containerClient.getBlockBlobClient(blobName);
+
+            await blobClient.uploadData(file.buffer);
+
+            const blobUrl = blobClient.url;
+            photos.push(blobUrl);
         }
 
-        // Створення нового елемента у базі даних
         const newItem = await Item.create({
             name,
             description,
@@ -80,13 +91,35 @@ const createItem = async (req, res) => {
             userId
         });
 
-        res.status(201).json(newItem); // Відповідь з новим елементом
+        res.status(201).json(newItem);
     } catch (error) {
-        console.error(error);
+        console.error('Помилка при створенні елементу:', error);
         res.status(500).json({ error: 'Internal Server Error' });
     }
 };
 
+const updateItem = async (req, res) => {
+    const itemId = req.params.itemId;
+    const { name, description } = req.body;
+
+    try {
+        const item = await Item.findByPk(itemId);
+
+        if (!item) {
+            return res.status(404).json({ error: 'Item not found' });
+        }
+
+        item.name = name;
+        item.description = description;
+
+        await item.save();
+
+        res.json(item); // Respond with the updated item
+    } catch (error) {
+        console.error('Error updating item:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+};
 
 module.exports = {
     getAllItems,
@@ -94,4 +127,5 @@ module.exports = {
     getCurrentUserItems,
     deleteItem,
     getPhoto,
+    updateItem,
 };

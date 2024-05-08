@@ -4,6 +4,7 @@ import SignUpPage from "@/components/Pages/SignUpPage.vue";
 import LoginPage from "@/components/Pages/LoginPage.vue";
 import ItemsPage from "@/components/Pages/ItemsPage.vue";
 import ProfilePage from "@/components/Pages/ProfilePage.vue";
+import ChatPage from "@/components/Pages/ChatPage.vue";
 const router = createRouter({
     history: createWebHistory(),
     routes: [
@@ -32,6 +33,11 @@ const router = createRouter({
             name: 'Profile',
             component: ProfilePage,
         },
+        {
+            path: '/chats',
+            name: 'Chats',
+            component: ChatPage
+        }
     ],
 });
 

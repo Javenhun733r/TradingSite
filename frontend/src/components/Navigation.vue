@@ -7,6 +7,7 @@
       <li><router-link to="/items">Home</router-link></li>
       <li v-if="isAuth"><router-link to="/profile"> <font-awesome-icon icon="fa-solid fa-user"></font-awesome-icon></router-link></li>
       <li v-if="isAuth"><font-awesome-icon @click="logout()" icon="fa-solid fa-xmark" /></li>
+      <li v-if="isAuth"><router-link to="/chats">Chats</router-link></li>
       <li v-if="!isAuth"><router-link to="/login">Login</router-link></li>
       <li v-if="!isAuth"><router-link to="/signup">Register</router-link></li>
     </ul>

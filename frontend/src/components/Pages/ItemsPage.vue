@@ -4,15 +4,15 @@
       <div class="verification_window">
         <div class="form-group">
           <label>Name</label>
-          <input type="text" id="name" v-model="name" required>
+          <input type="text" v-model="name" required>
         </div>
         <div class="form-group">
           <label>Description</label>
-          <input type="text" id="description" v-model="description" required>
+          <input type="text" v-model="description" required>
         </div>
         <div class="form-group">
           <label>Photos</label>
-          <input type="file" id="photos" ref="photosInput" multiple @change="handleFileUpload">
+          <input type="file" ref="photosInput" multiple @change="handleFileUpload">
         </div>
         <button @click="submitNewItem">Submit</button>
       </div>
@@ -20,51 +20,62 @@
   </ModalWindow>
   <div class="products-list">
     <h2>Наші продукти</h2>
-    <div class="product-row" v-for="(product, index) in products" :key="product.id">
-      <Product :product="product"/>
-      <template v-if="(index + 1) % 5 === 0">
-        <div class="row-divider"></div>
-      </template>
+    <template v-if="products.length === 0">
+      <div>Немає товарів доступних зараз.</div>
+    </template>
+    <div class="product-row">
+      <div class="product" v-for="(product, index) in products" :key="product.id">
+        <Product :product="product" />
+        <template v-if="(index + 1) % 5 !== 0 && index !== products.length - 1">
+          <div class="row-divider"></div>
+        </template>
+      </div>
     </div>
-    <div v-if="products.length === 0">Немає товарів доступних зараз.</div>
-    <button @click="isAddingItem = true">Add your own item</button>
+    <button @click="isAddingItem = true">Додати свій товар</button>
   </div>
 </template>
 
 <script>
-import Product from '../Items/Product.vue';
-import ModalWindow from "@/components/ModalWindows/ModalWindow.vue";
 import axios from "axios";
+import Product from "@/components/Items/Product.vue";
+import ModalWindow from "@/components/ModalWindows/ModalWindow.vue";
 
 export default {
-  components: {
-    Product,
-    ModalWindow
+  components: {ModalWindow, Product},
+  data() {
+    return {
+      name: '',
+      description: '',
+      uploadedPhotos: [],
+      isAddingItem: false,
+      products: []
+    };
   },
   methods: {
-    async fetchItems() {
-      try {
-        const response = await axios.get('http://localhost:8081/items');
-        this.products = response.data;
-        console.log(this.products)
-      } catch (error) {
-        console.error('Помилка при отриманні товарів', error);
-      }
-    },
     async submitNewItem() {
       try {
+        if (!this.name || !this.description) {
+          console.error('Будь ласка, заповніть усі обов’язкові поля.');
+          return;
+        }
+
         const formData = new FormData();
         formData.append('name', this.name);
         formData.append('description', this.description);
-        formData.append('jwt', localStorage.getItem('jwt'));
 
-        // Додайте кожен файл до FormData
-        this.uploadedPhotos.forEach(photo => {
-          formData.append('photos', photo.file); // Додаємо файл
+        for (const photo of this.uploadedPhotos) {
+          formData.append('photos', photo); // Додаємо файл як бінарні дані
+        }
+
+        const jwtToken = localStorage.getItem('jwt');
+
+        const response = await axios.post('http://localhost:8081/create_item', formData, {
+          headers: {
+            'Authorization': jwtToken,
+            'Content-Type': 'multipart/form-data'
+          }
         });
 
-        // Відправка запиту на сервер
-        const response = await axios.post('http://localhost:8081/create_item', formData);
         console.log('Елемент успішно додано', response.data);
 
         this.isAddingItem = false;
@@ -74,47 +85,73 @@ export default {
       }
     },
     handleFileUpload(event) {
-      const files = event.target.files;
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        this.uploadedPhotos.push({ file: file, name: file.name }); // Додаємо кожен файл до масиву
+      this.uploadedPhotos = Array.from(event.target.files);
+    },
+    async fetchItems() {
+      try {
+        const response = await axios.get('http://localhost:8081/items');
+        this.products = response.data;
+      } catch (error) {
+        console.error('Помилка при отриманні товарів', error);
       }
     }
   },
   mounted() {
     this.fetchItems();
-  },
-  data() {
-    return {
-      name: '',
-      description: '',
-      uploadedPhotos: [],
-      isAddingItem: false,
-      products: [],
-    };
   }
 };
 </script>
 
 <style scoped>
-.products-list {
-  margin-left: 20%;
-  margin-right: 20%;
+*{
+  margin-left: 5px;
+  margin-right: 5px;
 }
 
-.product-row {
-  flex-wrap: wrap;
-  display: inline-block;
+
+
+.form-group {
+  margin-bottom: 20px;
 }
 
-Product {
-  width: 20%; /* Кожен товар по 20% ширини для відображення 5 товарів у рядок */
+label {
+  font-weight: bold;
+}
+
+input[type="text"],
+input[type="file"] {
+  width: 100%;
   padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
   box-sizing: border-box;
 }
 
+button {
+  padding: 12px 24px;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #0056b3;
+}
+.product-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+
+
+
 .row-divider {
   width: 100%;
-  height: 20px; /* Висота роздільника між рядками товарів */
+  height: 20px;
 }
+
+
 </style>
+
