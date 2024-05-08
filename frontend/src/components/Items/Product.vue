@@ -15,6 +15,8 @@
 
     <!-- Інформація про продукт -->
     <h3>{{ product.name }}</h3>
+    <h3>Категорія: {{product.category}}</h3>
+    <h3>Підкатегорія: {{product.subcategory}}</h3>
     <p>{{ product.description }}</p>
     <button @click="contactSeller">Зв'язатися</button>
   </div>

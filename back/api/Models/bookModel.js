@@ -1,7 +1,7 @@
 // models/item.js
 
 module.exports = (sequelize, DataTypes) => {
-    const Item = sequelize.define("Item", {
+    const Book = sequelize.define("Book", {
         name: {
             type: DataTypes.STRING,
             allowNull: false
@@ -9,6 +9,18 @@ module.exports = (sequelize, DataTypes) => {
         description: {
             type: DataTypes.STRING,
             allowNull: false
+        },
+        category: {
+            type: DataTypes.STRING,
+            allowNull: false
+        },
+        subcategory: {
+            type: DataTypes.STRING,
+            allowNull: false
+        },
+        wishcategory: {
+            type: DataTypes.JSON, // Use JSON datatype to store an array of photo paths
+            allowNull: true
         },
         photos: {
             type: DataTypes.JSON, // Use JSON datatype to store an array of photo paths
@@ -19,12 +31,9 @@ module.exports = (sequelize, DataTypes) => {
             allowNull: false
         }
     }, {
-        timestamps: false
+        timestamps: true
     });
 
-    Item.associate = (models) => {
-        Item.belongsTo(models.User, { foreignKey: 'userId' });
-    };
 
-    return Item;
+    return Book;
 };

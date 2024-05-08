@@ -2,7 +2,7 @@ const express = require('express')
 const userController = require('../Controllers/userController')
 const { signup, login, getUserName } = userController
 const userAuth = require('../Middlewares/userAuth')
-const {getAllItems, createItem, getCurrentUserItems, deleteItem, getPhoto, updateItem} = require('../Controllers/itemsController')
+const {getAllItems, createItem, getCurrentUserItems, deleteItem, getPhoto, updateItem, getCategories} = require('../Controllers/itemsController')
 const router = express.Router()
 const multer = require('multer');
 const upload = multer();
@@ -20,4 +20,5 @@ router.post('/chats', chatController.createChat);
 router.get('/chats', chatController.getUserChats);
 router.get('/chats/:chatId/messages', chatController.getChatMessages);
 router.post('/chats/:chatId/messages', chatController.createMessage);
+router.get('/categories', getCategories);
 module.exports = router
