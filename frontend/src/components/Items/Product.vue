@@ -1,36 +1,41 @@
 <template>
   <div v-if="product" class="product">
-    <swiper :options="swiperOptions" ref="mySwiper">
-      <!-- Використовуємо SwiperSlide для кожного фото -->
-      <swiper-slide v-for="(photo, index) in product.photos" :key="index">
-        <img :src="photo" :alt="'Product Image ' + (index + 1)">
-      </swiper-slide>
-    </swiper>
-
-    <!-- Кнопки для перемикання слайдів -->
-    <div>
-      <button @click="goToPrevSlide" :disabled="isBeginning">Попередня</button>
-      <button @click="goToNextSlide" :disabled="isEnd">Наступна</button>
+    <div class="image-container">
+      <img :src="currentPhoto" :alt="`Product Image ${currentIndex + 1}`" class="product-image">
+      <div class="controls">
+        <button @click="previousPhoto" :disabled="currentIndex === 0" class="control-button">
+          <font-awesome-icon :icon="['fas', 'chevron-left']" />
+        </button>
+        <button @click="nextPhoto" :disabled="currentIndex === product.photos.length - 1" class="control-button">
+          <font-awesome-icon :icon="['fas', 'chevron-right']" />
+        </button>
+      </div>
     </div>
 
     <!-- Інформація про продукт -->
     <h3>{{ product.name }}</h3>
-    <h3>Категорія: {{product.category}}</h3>
-    <h3>Підкатегорія: {{product.subcategory}}</h3>
-    <p>{{ product.description }}</p>
-    <button @click="contactSeller">Зв'язатися</button>
+    <h3>Категорія: {{ product.category }}</h3>
+    <h3>Підкатегорія: {{ product.subcategory }}</h3>
+    <div v-if="product.description" class="product-description">
+      <p v-for="(line, index) in splitTextIntoLines(product.description, 30)" :key="index">{{ line }}</p>
+    </div>
+
+    <div v-if="product.wishcategory && product.wishcategory.length > 0">
+      <h3>Бажані категорії:</h3>
+      <ul>
+        <li v-for="(category, index) in product.wishcategory" :key="index">{{ category }}</li>
+      </ul>
+    </div>
+
+    <button v-if="isAuth" class="contact-button" @click="contactSeller">Зв'язатися</button>
   </div>
 </template>
 
 <script>
 import axios from "axios";
-import { Swiper, SwiperSlide } from 'vue-awesome-swiper'; // Імпортуємо компоненти Swiper
+import router from "@/components/router/index.js";
 
 export default {
-  components: {
-    Swiper,
-    SwiperSlide
-  },
   props: {
     product: {
       type: Object,
@@ -39,48 +44,65 @@ export default {
   },
   data() {
     return {
-      swiperOptions: {
-        // Опції для Swiper
-        slidesPerView: 1,
-        centeredSlides: true,
-        loop: false,
-        navigation: {
-          nextEl: '.swiper-button-next',
-          prevEl: '.swiper-button-prev'
-        }
-      }
+      currentIndex: 0,
+      isAuth: false,
+      jwt: ""
     };
   },
+  mounted() {
+    const jwt = localStorage.getItem("jwt")
+    this.isAuth = jwt!==null;
+    this.jwt = jwt;
+  },
   computed: {
-    // Перевірка, чи початок/кінець каруселі
-    isBeginning() {
-      return this.$refs.mySwiper ? this.$refs.mySwiper.swiper.isBeginning : true;
-    },
-    isEnd() {
-      return this.$refs.mySwiper ? this.$refs.mySwiper.swiper.isEnd : true;
+    currentPhoto() {
+      return this.product.photos[this.currentIndex];
     }
   },
   methods: {
+    splitTextIntoLines(text, lineLength) {
+      const lines = [];
+      let line = '';
+
+      for (let i = 0; i < text.length; i++) {
+        line += text[i];
+
+        // Якщо довжина поточного рядка досягла бажаної довжини, додати його до масиву і почати новий рядок
+        if (line.length === lineLength) {
+          lines.push(line);
+          line = '';
+        }
+      }
+
+      // Додати останній рядок, якщо він залишився неповним
+      if (line.length > 0) {
+        lines.push(line);
+      }
+
+      return lines;
+    },
     async contactSeller() {
       try {
         const sellerName = this.product.name;
         const response = await axios.post('http://localhost:8081/chats', {
-          name: `Chat about trade of ${sellerName}`,
+          name: `Чат про обмін ${sellerName}`,
           userIds: [localStorage.getItem('jwt'), this.product.userId]
         });
+        window.location.href = '/chats';
         console.log('Чат успішно створено:', response.data);
+
       } catch (error) {
         console.error('Помилка при створенні чату з продавцем', error);
       }
     },
-    goToNextSlide() {
-      if (this.$refs.mySwiper) {
-        this.$refs.mySwiper.swiper.slideNext();
+    nextPhoto() {
+      if (this.currentIndex < this.product.photos.length - 1) {
+        this.currentIndex++;
       }
     },
-    goToPrevSlide() {
-      if (this.$refs.mySwiper) {
-        this.$refs.mySwiper.swiper.slidePrev();
+    previousPhoto() {
+      if (this.currentIndex > 0) {
+        this.currentIndex--;
       }
     }
   }
@@ -90,6 +112,7 @@ export default {
 <style scoped>
 /* Стилі для компонента product */
 .product {
+
   flex-basis: calc(20% - 20px);
   margin-bottom: 20px;
   background-color: #f9f9f9;
@@ -98,36 +121,75 @@ export default {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.product img {
+.product .image-container {
+  position: relative;
+}
+
+.product img.product-image {
   max-width: 100%;
   height: auto;
   margin-bottom: 10px;
   border-radius: 4px;
 }
 
-.product h3 {
-  font-size: 16px;
-  margin-bottom: 10px;
+.product .controls {
+  position: absolute;
+  bottom: 50%;
+  left: 0;
+  right: 0;
+  transform: translateY(50%);
+  display: flex;
+  justify-content: space-between;
 }
 
-.product p {
-  font-size: 14px;
-  color: #666;
-  margin-bottom: 10px;
+.control-button {
+  padding: 0;
+  background-color: transparent;
+  color: #007bff;
+  border: none;
+  cursor: pointer;
 }
 
-.product button {
+.control-button {
+  font-size: 24px;
+}
+
+.control-button:hover {
+  color: #0056b3;
+}
+.product .image-container {
+  position: relative;
+  display: flex;
+  justify-content: center; /* Центруємо зображення по горизонталі */
+  align-items: center; /* Центруємо зображення по вертикалі */
+  height: 300px; /* Встановлюємо фіксовану висоту контейнера зображення */
+}
+
+.product img.product-image {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  border-radius: 4px;
+}
+.control-button:disabled {
+  color: #ccc;
+  cursor: not-allowed;
+}
+.contact-button {
   display: block;
   width: 100%;
   padding: 10px;
+  margin-top: 20px;
   background-color: #007bff;
   color: #fff;
   border: none;
   border-radius: 4px;
   cursor: pointer;
+  text-align: center;
+  transition: background-color 0.3s ease;
 }
 
-.product button:hover {
+.contact-button:hover {
   background-color: #0056b3;
 }
 </style>

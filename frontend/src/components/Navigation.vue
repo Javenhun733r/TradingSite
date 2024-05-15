@@ -1,7 +1,7 @@
 <template>
   <nav class="navbar">
     <div class="logo">
-      <router-link to="/" class="text-logo">TradingSite</router-link>
+      <router-link to="/" class="text-logo">BookTrader</router-link>
     </div>
     <ul class="nav-links" >
       <li><router-link to="/items">Home</router-link></li>

@@ -1,18 +1,18 @@
 <template>
   <div class="container">
-    <h2>Login</h2>
+    <h2>Вхід</h2>
     <form @submit.prevent="login">
 
 
       <div class="form-group">
-        <label >Username</label>
+        <label >Логін</label>
         <input type="text" id="username" v-model="username" required>
       </div>
       <div class="form-group">
-        <label >Password</label>
+        <label >Пароль</label>
         <input type="password" id="password" v-model="password" required>
       </div>
-      <button type="submit" class="cta-button">Sign Up</button>
+      <button type="submit" class="cta-button">Вхід</button>
     </form>
   </div>
 </template>

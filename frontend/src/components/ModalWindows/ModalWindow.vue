@@ -1,14 +1,8 @@
 <template>
-  <div
-      class="modalWindow"
-      v-if="isActive"
-      @click="hideDialog"
-  >
-    <div
-        class="modalWindow__content"
-        @click.stop
-    >
+  <div class="modalWindow" v-if="isActive" @click="hideDialog">
+    <div class="modalWindow__content" @click.stop>
       <slot></slot>
+
     </div>
   </div>
 </template>
@@ -49,5 +43,7 @@ export default {
   height: 300px;
   width: 300px;
   padding: 20px;
+  position: relative; /* Додали позицію relative для кнопки */
 }
+
 </style>

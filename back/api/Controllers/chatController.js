@@ -4,7 +4,16 @@ const Chat = db.chats;
 const Message = db.messages;
 const User = db.users;
 const UserChat = db.userChats;
+const {EMAIL, PASSWORD} = require("../../env") ;
+const nodemailer = require("nodemailer");
 
+const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: EMAIL,
+        pass: PASSWORD
+    }
+});
 const createChat = async (req, res) => {
     try {
         const { name, userIds } = req.body;
@@ -13,13 +22,20 @@ const createChat = async (req, res) => {
         const chatId = chat.id;
         const decoded = jwt.verify(userIds[0], process.env.secretKey);
         userIds[0] = decoded.id;
-        console.log(userIds);
         const userChatPromises = userIds.map(async (userId) => {
             await UserChat.create({ userId, chatId });
         });
+
         // Wait for all UserChat creations to complete
         await Promise.all(userChatPromises);
-
+        const ownerOfBook = await User.findByPk(userIds[1])
+        const mailOptions = {
+            from: `"BookTrader"${EMAIL}`,
+            to: ownerOfBook.email,
+            subject: `Вітаю ${ownerOfBook.username}, з вами створили ${chat.name}`,
+            text: `Ви отримали повідомлення у  ${chat.name}`
+        };
+        await transporter.sendMail(mailOptions);
         res.status(201).json(chat);
     } catch (error) {
         console.error('Error creating chat:', error);
@@ -69,8 +85,8 @@ const createMessage = async (req, res) => {
         const messageWithUser = {
             id: message.id,
             text: message.text,
-            sender: user.username, // Додати ім'я користувача в sender
-            createdAt: message.createdAt // Додати час створення повідомлення
+            sender: user.username,
+            createdAt: message.createdAt
         };
 
         res.status(201).json(messageWithUser);
@@ -114,11 +130,57 @@ const enrichMessage = async (message)=> {
 
     return enrichedMessage;
 }
+const getChatMembers = async (req, res) => {
+    const { chatId } = req.params;
+    try {
+        const userChats = await UserChat.findAll({ where: { chatId } });
+
+        const users = [];
+
+        await Promise.all(userChats.map(async (userChat) => {
+            const user = await User.findByPk(userChat.userId);
+            if (user) {
+                users.push({
+                    username: user.username,
+                });
+            }
+        }));
+
+        res.json(users);
+    } catch (error) {
+        console.error('Error fetching chat members:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+};
+const deleteChat = async (req, res) => {
+    const { chatId } = req.params;
+    try {
+        const chat = await Chat.findByPk(chatId);
+        if (!chat) {
+            return res.status(404).json({ error: 'Chat not found' });
+        }
+        // Видалення чату
+        await chat.destroy();
+
+        // Знаходження та видалення всіх зв'язаних записів UserChat
+        const userChats = await UserChat.findAll({ where: { chatId } });
+        await Promise.all(userChats.map(async (userChat) => {
+            await userChat.destroy();
+        }));
+
+        res.status(204).end(); // Відповідь статусом 204 (No Content)
+    } catch (error) {
+        console.error('Error deleting chat:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+};
 
 module.exports = {
     createChat,
+    getChatMembers,
     enrichMessage,
     getChatMessages,
     createMessage,
-    getUserChats
+    getUserChats,
+    deleteChat
 };

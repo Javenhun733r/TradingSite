@@ -1,8 +1,8 @@
 <template>
   <div class="container">
-    <h1>Welcome to site for p2p trading</h1>
-    <p>Here you can exchange your old items for other's staff. If you are ready let's get started.</p>
-    <router-link to="/signup" class="cta-button">Get Started</router-link>
+    <h1>Вітаємо вас на сайті для обміну книжок!</h1>
+    <p>Тут ви можете обміняти свої книжки, на книжки інших людей, не витрачаючи на це значних коштів, а також збагачуючи свій кругозір.</p>
+    <router-link to="/signup" class="cta-button">Почнімо!</router-link>
   </div>
 </template>
 

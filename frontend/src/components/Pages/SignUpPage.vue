@@ -1,21 +1,21 @@
 <template>
   <div class="container">
-    <h2>Sign Up</h2>
+    <h2>Реєстрація</h2>
     <form @submit.prevent="signup">
 
       <div class="form-group">
-        <label>Email</label>
+        <label>Пошта</label>
         <input type="email" id="email" v-model="email" required>
       </div>
       <div class="form-group">
-        <label >Username</label>
+        <label >Логін</label>
         <input type="text" id="username" v-model="username" required>
       </div>
       <div class="form-group">
-        <label >Password</label>
+        <label >Пароль</label>
         <input type="password" id="password" v-model="password" required>
       </div>
-      <button type="submit" class="cta-button">Sign Up</button>
+      <button type="submit" class="cta-button">Реєстрація</button>
     </form>
   </div>
 </template>
