@@ -237,8 +237,7 @@ button {
 
 .no-chat-selected {
   padding: 20px;
-  background-color: #333;
-  border: 1px solid #444;
+  
   border-radius: 4px;
 }
 </style>
